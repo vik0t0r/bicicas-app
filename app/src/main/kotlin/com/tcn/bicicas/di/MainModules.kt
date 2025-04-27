@@ -7,5 +7,6 @@ val mainModules = listOf(
     preferencesModule,
     settingsModule,
     pinModule(),
+    loanModule(),
     stationModule()
 )

@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-enum class Screen { Pin, List, Map }
+enum class Screen { Pin, Loan, List, Map }
 
 data class NavigationState(
     val initialScreen: Screen,

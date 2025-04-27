@@ -33,7 +33,7 @@
     <!--Pin-->
     <string name="pin_welcome_message">Para poder disfrutar de esta funcionalidad es necesario iniciar sesión con sus credenciales</string>
     <string name="pin_welcome_title_warning">Aviso</string>
-    <string name="pin_welcome_message_warning">Unnoficial Bicicas no es una aplicación oficial, las credenciales introducidas en esta aplicación se usan para poder acceder a los servidores oficiales de Bicicas directamente, sin intermediarios, mediante una conexión segura, para poder obtener la información necesaria para generar el código pin.
+    <string name="pin_welcome_message_warning">Unnoficial Bicicas no es una aplicación oficial, las credenciales introducidas en esta aplicación se usan para poder acceder a los servidores oficiales de Bicicas directamente, sin intermediarios, mediante una conexión segura.
         \n\nLas credenciales introducidas permanecen seguras, no son, en ningún caso, almacenadas en el dispositivo ni enviadas a servidores de terceros.
         \n\nUnnoficial Bicicas no genera ningún tipo de ingreso, ni será nunca su intención, la única misión es ofrecer una alternativa moderna y fluida.
     </string>
@@ -62,5 +62,6 @@
     <string name="stations_list_status_updated_minutes_ago">Hace %1$d m</string>
     <string name="stations_list_status_updated_hours_ago">Hace %1$d h</string>
     <string name="stations_list_status_updated_days_ago">Hace %1$d d</string>
+    <string name="desbloqueo_mediante_codigo_qr">Desbloqueo mediante código QR</string>
 
 </resources>

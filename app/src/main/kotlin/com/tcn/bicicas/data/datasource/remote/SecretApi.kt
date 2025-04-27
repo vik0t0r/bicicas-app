@@ -1,5 +1,6 @@
 package com.tcn.bicicas.data.datasource.remote
 
+import com.tcn.bicicas.data.model.Loan
 import com.tcn.bicicas.data.model.Token
 import com.tcn.bicicas.data.model.TwoFactorAuth
 import retrofit2.Response
@@ -14,12 +15,15 @@ interface SecretApi {
     suspend fun authenticate(
         @Query("username") username: String,
         @Query("password") password: String,
-        @Query("client_id") clientId: String,
-        @Query("client_secret") clientSecret: String,
-        @Query("grant_type") grantType: String,
     ): Response<Token>
 
     @GET("dashboard")
-    suspend fun getTwoFactorAuth(@Header("Authorization") token: String): Response<TwoFactorAuth>
+    suspend fun getTwoFactorAuth(@Header("authorization") token: String): Response<TwoFactorAuth>
+
+    @POST("loans")
+    suspend fun remoteLoan(
+        @Header("authorization") token: String,
+        @Query("qrcode") qrcode: String,
+        @Query("is_electric") isElectric: Boolean) : Response<Loan>
 
 }

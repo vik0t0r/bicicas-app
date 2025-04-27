@@ -1,16 +1,12 @@
-package com.tcn.bicicas.ui.pin
+package com.tcn.bicicas.ui.loan
+
 
 import androidx.compose.runtime.Immutable
 import com.tcn.bicicas.ui.components.login.LoginError
 
 
 @Immutable
-data class PinState(
-    val timeText: String? = null,
-    val progress: Float = 0f,
-    val pin: String? = null,
-    val nextPin: String? = null,
-    val userNumber: String? = null,
+data class LoanState(
     val loading: Boolean = false,
     val loggedIn: Boolean = false,
     val loginError: LoginError? = null,

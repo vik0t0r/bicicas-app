@@ -1,20 +1,19 @@
-package com.tcn.bicicas.ui.pin
+package com.tcn.bicicas.ui.loan
+
+import com.tcn.bicicas.ui.components.login.LoginDialog
+import com.tcn.bicicas.ui.pin.PinState
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Undo
 import androidx.compose.material3.AlertDialog
@@ -51,36 +49,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tcn.bicicas.R
-import com.tcn.bicicas.ui.components.AutoSizeText
-import com.tcn.bicicas.ui.components.CountDownIndicator
 import com.tcn.bicicas.ui.components.ScrollableAlertDialog
-import com.tcn.bicicas.ui.components.login.LoginDialog
 import org.koin.androidx.compose.getViewModel
 
 @Composable
-fun PinScreen(padding: PaddingValues) {
-    val viewModel: PinViewModel = getViewModel()
-    val state by viewModel.pinState.collectAsState()
-    PinScreen(state, padding, viewModel::logout, viewModel::login)
+fun LoanScreen(padding: PaddingValues) {
+    val viewModel: LoanViewModel = getViewModel()
+    val state by viewModel.loanState.collectAsState()
+    LoanScreen(state, padding, viewModel::logout, viewModel::login)
 }
 
 @Composable
-fun PinScreen(
-    state: PinState,
+fun LoanScreen(
+    state: LoanState,
     padding: PaddingValues,
     onLogout: () -> Unit,
     onLogin: (String, String) -> Unit
 ) {
     if (state.loggedIn) {
-        PinContent(state, padding, onLogout)
+        LoanContent(state, padding, onLogout)
     } else {
-        PinWelcomeContent(state, padding, onLogin)
+        LoanWelcomeContent(state, padding, onLogin)
     }
 }
 
 @Composable
-private fun PinWelcomeContent(
-    state: PinState,
+private fun LoanWelcomeContent(
+    state: LoanState,
     padding: PaddingValues,
     onLogin: (String, String) -> Unit
 ) {
@@ -98,7 +93,7 @@ private fun PinWelcomeContent(
         ) {
             Spacer(modifier = Modifier.weight(0.5f))
             Text(
-                text = stringResource(R.string.pin_welcome_title),
+                text = stringResource(R.string.desbloqueo_mediante_codigo_qr),
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.sizeIn(maxWidth = 600.dp),
@@ -163,7 +158,7 @@ private fun PinWelcomeContent(
 
 
 @Composable
-private fun PinContent(state: PinState, padding: PaddingValues, onLogout: () -> Unit) {
+private fun LoanContent(state: LoanState, padding: PaddingValues, onLogout: () -> Unit) {
     var displayLogoutDialog by rememberSaveable { mutableStateOf(false) }
     val onLogoutClicked = { displayLogoutDialog = true }
     Surface(
@@ -173,9 +168,9 @@ private fun PinContent(state: PinState, padding: PaddingValues, onLogout: () -> 
     ) {
 
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            PortraitPinContent(state, onLogoutClicked)
+            PortraitLoanContent(state, onLogoutClicked)
         } else {
-            LandscapePinContent(state, onLogoutClicked)
+            LandscapeLoanContent(state, onLogoutClicked)
         }
     }
 
@@ -198,11 +193,12 @@ private fun PinContent(state: PinState, padding: PaddingValues, onLogout: () -> 
 }
 
 @Composable
-private fun PortraitPinContent(state: PinState, onLogoutButtonClicked: () -> Unit) {
+private fun PortraitLoanContent(state: LoanState, onLogoutButtonClicked: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Logout
         TextButton(
             onClick = onLogoutButtonClicked,
             modifier = Modifier
@@ -211,37 +207,14 @@ private fun PortraitPinContent(state: PinState, onLogoutButtonClicked: () -> Uni
         ) {
             Text(stringResource(R.string.pin_logout))
         }
-        Spacer(Modifier.height(12.dp))
-        UserText(state.userNumber)
-        Spacer(Modifier.weight(1f))
-        BoxWithConstraints(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxWidth(0.75f)
-                .wrapContentHeight()
-                .aspectRatio(1f)
-        ) {
-            CountDownIndicator(progress = state.progress, stroke = 12.dp)
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize(0.8f)
-            ) {
-                Crossfade(state.timeText) { state ->
-                    AutoSizeText(state ?: "", style = MaterialTheme.typography.headlineMedium)
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                PinText(state.pin, state.nextPin)
-                Spacer(modifier = Modifier.weight(1f))
 
-            }
-        }
         Spacer(Modifier.weight(1f))
         Spacer(Modifier.height(24.dp))
     }
 }
 
 @Composable
-private fun LandscapePinContent(state: PinState, onLogoutButtonClicked: () -> Unit) {
+private fun LandscapeLoanContent(state: LoanState, onLogoutButtonClicked: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
 
         // Logout button
@@ -254,47 +227,7 @@ private fun LandscapePinContent(state: PinState, onLogoutButtonClicked: () -> Un
             Text(stringResource(R.string.pin_logout))
         }
 
-        Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center) {
-            Spacer(Modifier.weight(0.25f / 4f))
-            Box(
-                modifier = Modifier
-                    .weight(0.25f)
-                    .padding(top = 48.dp)
-            ) {
-                UserText(state.userNumber, modifier = Modifier.align(Alignment.TopEnd))
-            }
 
-            Spacer(Modifier.weight(0.25f / 4f))
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .weight(0.25f)
-                    .fillMaxHeight(0.8f)
-                    .aspectRatio(1f, true)
-            ) {
-                CountDownIndicator(
-                    progress = state.progress,
-                    stroke = 12.dp,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-                AnimatedCounter(
-                    count = state.timeText.orEmpty(),
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-            }
-            Spacer(Modifier.weight(0.25f / 4f))
-            Box(
-                modifier = Modifier
-                    .weight(0.25f)
-                    .padding(top = 48.dp)
-            ) {
-                PinText(
-                    state.pin, state.nextPin,
-                    modifier = Modifier.align(Alignment.TopStart)
-                )
-            }
-            Spacer(Modifier.weight(0.25f / 4f))
-        }
     }
 }
 
@@ -309,67 +242,5 @@ private fun UserText(userNumber: String?, modifier: Modifier = Modifier) {
             text = userNumber ?: "",
             style = MaterialTheme.typography.displayLarge.copy(fontSize = 48.sp)
         )
-    }
-}
-
-@Composable
-private fun PinText(pin: String?, nextPin: String?, modifier: Modifier = Modifier) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(stringResource(R.string.pin_label_pin), style = MaterialTheme.typography.titleMedium)
-        AnimatedCounter(
-            count = pin.orEmpty(),
-            style = MaterialTheme.typography.displayLarge.copy(fontSize = 48.sp),
-        )
-        Row(Modifier.offset((-6).dp)) {
-            Icon(
-                imageVector = Icons.Rounded.Undo,
-                contentDescription = "Next",
-                Modifier
-                    .alpha(0.5f)
-                    .offset(y = 2.dp)
-                    .rotate(225f)
-            )
-            Spacer(modifier = Modifier.width(2.dp))
-            AnimatedCounter(
-                count = nextPin.orEmpty(),
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.alpha(0.5f)
-            )
-        }
-    }
-}
-
-
-@Composable
-fun AnimatedCounter(
-    count: String,
-    modifier: Modifier = Modifier,
-    style: TextStyle = MaterialTheme.typography.bodyMedium
-) {
-    var oldCount by remember { mutableStateOf(count) }
-    SideEffect {
-        oldCount = count
-    }
-    Row(modifier = modifier) {
-        for (i in count.indices) {
-            val oldChar = oldCount.getOrNull(i)
-            val newChar = count[i]
-            val char = if (oldChar == newChar) {
-                oldCount[i]
-            } else {
-                count[i]
-            }
-            AnimatedContent(
-                targetState = char,
-                transitionSpec = { slideInVertically { it } togetherWith slideOutVertically { -it } },
-                label = "counter"
-            ) { c ->
-                Text(
-                    text = c.toString(),
-                    style = style,
-                    softWrap = false
-                )
-            }
-        }
     }
 }

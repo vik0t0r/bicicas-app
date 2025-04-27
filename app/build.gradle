@@ -40,6 +40,7 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion "1.5.4"
@@ -71,6 +72,10 @@ dependencies {
     // Dependency injection
     implementation 'io.insert-koin:koin-android:3.5.0'
     implementation 'io.insert-koin:koin-androidx-compose:3.5.0'
+    implementation 'androidx.camera:camera-core:1.4.2'
+    implementation 'androidx.camera:camera-lifecycle:1.4.2'
+    implementation 'androidx.camera:camera-view:1.4.2'
+    implementation 'com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.1'
     testImplementation 'io.insert-koin:koin-test:3.5.0'
     testImplementation 'io.insert-koin:koin-test-junit4:3.5.0'
 

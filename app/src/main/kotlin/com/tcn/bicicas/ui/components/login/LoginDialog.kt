@@ -1,4 +1,4 @@
-package com.tcn.bicicas.ui.pin
+package com.tcn.bicicas.ui.components.login
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,11 +43,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.tcn.bicicas.R
+import com.tcn.bicicas.ui.pin.PinState
 
 
 @Composable
 fun LoginDialog(
-    loginError: PinState.LoginError?,
+    loginError: LoginError?,
     isLoading: Boolean,
     onDismissRequest: () -> Unit,
     onLogin: (String, String) -> Unit
@@ -67,7 +68,7 @@ fun LoginDialog(
 
 @Composable
 private fun LoginContent(
-    loginError: PinState.LoginError?,
+    loginError: LoginError?,
     isLoading: Boolean,
     onLoginClicked: (String, String) -> Unit
 ) {
@@ -97,9 +98,9 @@ private fun LoginContent(
 
         Text(
             text = when (loginError) {
-                PinState.LoginError.WrongUserPass -> stringResource(R.string.pin_login_error_wrong_user_pass)
-                PinState.LoginError.Network -> stringResource(R.string.pin_login_error_network)
-                PinState.LoginError.Unknown -> stringResource(R.string.pin_login_error_unknown)
+                LoginError.WrongUserPass -> stringResource(R.string.pin_login_error_wrong_user_pass)
+                LoginError.Network -> stringResource(R.string.pin_login_error_network)
+                LoginError.Unknown -> stringResource(R.string.pin_login_error_unknown)
                 null -> ""
             },
             textAlign = TextAlign.Center

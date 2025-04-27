@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CameraEnhance
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.Pin
@@ -38,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import com.tcn.bicicas.R
 import com.tcn.bicicas.data.model.Settings
 import com.tcn.bicicas.data.model.Station
+import com.tcn.bicicas.ui.loan.LoanScreen
 import com.tcn.bicicas.ui.pin.PinScreen
 import com.tcn.bicicas.ui.settings.SettingsScreen
 import com.tcn.bicicas.ui.settings.SettingsViewModel
@@ -119,6 +121,7 @@ fun MainScreen(
 private val iconForScreen = { screen: Screen ->
     when (screen) {
         Screen.Pin -> Icons.Rounded.Pin
+        Screen.Loan -> Icons.Rounded.CameraEnhance
         Screen.List -> Icons.Rounded.List
         Screen.Map -> Icons.Rounded.Map
     }
@@ -152,13 +155,14 @@ private fun MainContent(
     val contentForScreen = @Composable { screen: Screen, padding: PaddingValues ->
         when (screen) {
             Screen.Pin -> PinScreen(padding)
+            Screen.Loan -> LoanScreen(padding)
             Screen.List -> StationScreen(padding, stationsViewModel)
             Screen.Map -> MapScreen(padding, stationsViewModel, mapState)
         }
     }
 
     val scrollBehavior = when (navigationState.screen) {
-        Screen.Pin, Screen.Map -> TopAppBarDefaults.pinnedScrollBehavior()
+        Screen.Pin, Screen.Map, Screen.Loan -> TopAppBarDefaults.pinnedScrollBehavior()
         Screen.List -> TopAppBarDefaults.enterAlwaysScrollBehavior()
     }
 

@@ -2,6 +2,7 @@ package com.tcn.bicicas.data
 
 import com.tcn.bicicas.data.model.HttpError
 import com.tcn.bicicas.data.model.NetworkError
+import com.tcn.bicicas.data.model.Token
 import kotlinx.coroutines.CancellationException
 import retrofit2.HttpException
 import retrofit2.Response
@@ -10,10 +11,9 @@ import java.io.IOException
 
 inline fun <T, R> Result<T>.andThen(transform: (T) -> Result<R>): Result<R> {
     return fold(
-        onSuccess = { value -> transform(value) },
+        onSuccess = { value -> transform(value) }, // Return Result<R> from the transform function
         onFailure = { exception -> Result.failure(exception) }
     )
-
 }
 
 

@@ -3,9 +3,12 @@ package com.tcn.bicicas.ui.pin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tcn.bicicas.data.Clock
+import com.tcn.bicicas.data.andThen
 import com.tcn.bicicas.data.model.HttpError
 import com.tcn.bicicas.data.model.NetworkError
+import com.tcn.bicicas.data.repository.LoanRepository
 import com.tcn.bicicas.data.repository.PinRepository
+import com.tcn.bicicas.ui.components.login.LoginError
 import com.tcn.bicicas.ui.tickerFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +25,7 @@ import kotlin.math.roundToInt
 
 class PinViewModel(
     private val pinRepository: PinRepository,
+    private val loanRepository: LoanRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -30,10 +34,39 @@ class PinViewModel(
 
     init {
 
-        // Update auth state
-        pinRepository.authenticatedState.onEach { loggedIn ->
+        // this should authenticate pinRepository in case loanRepository gets authenticated
+        viewModelScope.launch {
+            combine(
+                loanRepository.authenticatedState,
+                pinRepository.authenticatedState
+            ) { loanAuthenticated, pinAuthenticated ->
+                loanAuthenticated to pinAuthenticated
+            }.collect { (loanAuthenticated, pinAuthenticated) ->
+                if (loanAuthenticated && !pinAuthenticated) {
+                    loanRepository.getToken()?.let {
+                        pinRepository.authenticateTwoFactor(it.value).onSuccess{ twoFactorAuth ->
+                            _pinState.update { state ->
+                                state.copy(
+                                    loggedIn = true,
+                                    loading = false,
+                                    userNumber = twoFactorAuth.user
+                                )
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        // close pinRepository in case loanRepository is closed
+        loanRepository.authenticatedState.onEach { loggedIn ->
             _pinState.update { state -> state.copy(loggedIn = loggedIn) }
+            if (!loggedIn) {
+                pinRepository.logout()
+            }
         }.launchIn(viewModelScope)
+
 
         // Update progress every 500ms and pin on epoch changes (every 30s)
         tickerFlow(500)
@@ -73,29 +106,23 @@ class PinViewModel(
     fun login(username: String, password: String) {
         _pinState.update { it.copy(loading = true, loginError = null) }
         viewModelScope.launch {
-            pinRepository.authenticate(username, password)
-                .onSuccess { twoFactorAuth ->
-                    _pinState.update { state ->
-                        state.copy(
-                            loggedIn = true,
-                            loading = false,
-                            userNumber = twoFactorAuth.user
-                        )
-                    }
-                }.onFailure { error ->
+            loanRepository.authenticate(username, password)
+                .onFailure { error ->
                     val loginError = when (error) {
-                        is HttpError -> PinState.LoginError.WrongUserPass
-                        is NetworkError -> PinState.LoginError.Network
-                        else -> PinState.LoginError.Unknown
+                        is HttpError -> LoginError.WrongUserPass
+                        is NetworkError -> LoginError.Network
+                        else -> LoginError.Unknown
                     }
                     _pinState.update { state ->
                         state.copy(loginError = loginError, loading = false)
                     }
                 }
+
         }
     }
 
     fun logout() {
+        loanRepository.logout()
         pinRepository.logout()
     }
 
