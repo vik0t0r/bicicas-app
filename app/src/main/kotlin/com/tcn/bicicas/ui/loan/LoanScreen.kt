@@ -1,9 +1,12 @@
 package com.tcn.bicicas.ui.loan
 
+import android.content.Intent
 import com.tcn.bicicas.ui.components.login.LoginDialog
 import com.tcn.bicicas.ui.pin.PinState
 
 import android.content.res.Configuration
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -24,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Undo
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -43,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -50,6 +55,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tcn.bicicas.R
 import com.tcn.bicicas.ui.components.ScrollableAlertDialog
+import io.github.g00fy2.quickie.QRResult
+import io.github.g00fy2.quickie.ScanCustomCode
+import io.github.g00fy2.quickie.ScanQRCode
+import io.github.g00fy2.quickie.config.BarcodeFormat
+import io.github.g00fy2.quickie.config.ScannerConfig
 import org.koin.androidx.compose.getViewModel
 
 @Composable
@@ -198,6 +208,7 @@ private fun PortraitLoanContent(state: LoanState, onLogoutButtonClicked: () -> U
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         // Logout
         TextButton(
             onClick = onLogoutButtonClicked,
@@ -206,6 +217,40 @@ private fun PortraitLoanContent(state: LoanState, onLogoutButtonClicked: () -> U
                 .padding(vertical = 12.dp, horizontal = 4.dp)
         ) {
             Text(stringResource(R.string.pin_logout))
+        }
+        val ctx = LocalContext.current
+        val scanQrCodeLauncher = rememberLauncherForActivityResult(ScanCustomCode()) { result ->
+            val text = when (result) {
+                is QRResult.QRSuccess -> {
+                    result.content.rawValue
+                    // decoding with default UTF-8 charset when rawValue is null will not result in meaningful output, demo purpose
+                        ?: result.content.rawBytes?.let { String(it) }.orEmpty()
+                }
+                QRResult.QRUserCanceled -> "User canceled"
+                QRResult.QRMissingPermission -> "Missing permission"
+                is QRResult.QRError -> "${result.exception.javaClass.simpleName}: ${result.exception.localizedMessage}"
+            }
+            // handle QRResult
+            Toast.makeText(ctx, text, Toast.LENGTH_LONG).show()
+        }
+
+        Button(
+            onClick = {
+                scanQrCodeLauncher.launch( ScannerConfig.build {
+                    setBarcodeFormats(listOf(BarcodeFormat.FORMAT_QR_CODE)) // set interested barcode formats
+                    setOverlayStringRes(R.string.app_name) // string resource used for the scanner overlay
+                    //setOverlayDrawableRes(R.drawable.ic_scan_barcode) // drawable resource used for the scanner overlay
+                    setHapticSuccessFeedback(false) // enable (default) or disable haptic feedback when a barcode was detected
+                    setShowTorchToggle(true) // show or hide (default) torch/flashlight toggle button
+                    setShowCloseButton(true) // show or hide (default) close button
+                    setHorizontalFrameRatio(1f) // set the horizontal overlay ratio (default is 1 / square frame)
+                    setUseFrontCamera(false) // use the front camera
+                    setKeepScreenOn(true) // keep the device's screen turned on
+                })
+            },
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(text = "Escanear código QR")
         }
 
         Spacer(Modifier.weight(1f))

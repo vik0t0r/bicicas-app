@@ -9,7 +9,6 @@ import com.tcn.bicicas.data.model.HttpError
 import com.tcn.bicicas.data.model.NetworkError
 import com.tcn.bicicas.data.repository.LoanRepository
 import com.tcn.bicicas.ui.components.login.LoginError
-import com.tcn.bicicas.ui.components.qrscanner.QrCodeScanner
 import com.tcn.bicicas.ui.tickerFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,13 +66,7 @@ class LoanViewModel(
         loanRepository.logout()
     }
 
-    fun listenToQrScanner(scanner: QrCodeScanner) {
-        viewModelScope.launch {
-            scanner.qrCodeFlow.collect { qrCode ->
-                handleQrCode(qrCode)
-            }
-        }
-    }
+
 
     private fun handleQrCode(qrCode: String) {
         // Your business logic here
