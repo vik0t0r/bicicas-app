@@ -78,6 +78,36 @@ fun LoanScreen(
     } else {
         LoanWelcomeContent(state, padding, onLogin)
     }
+
+    // show loanSuccess
+    if (state.loanSuccess){
+        AlertDialog(
+            onDismissRequest = {         onLoanMsgShown() },
+            title = { Text(stringResource(R.string.popup_success)) },
+            text = { Text(stringResource(R.string.loans_success)) },
+            confirmButton = { TextButton(onClick = onLoanMsgShown) { Text(stringResource(R.string.popup_accept)) } },
+        )
+    }
+
+    // we can have errors even if we are not logged in
+    if (state.loanError != null){
+        val errMsg = when(state.loanError){
+            LoanState.LoanError.Unauthenticated -> stringResource(R.string.loans_error_unauthenticated)
+            LoanState.LoanError.NoBicycle -> stringResource(R.string.loans_error_no_bicycle)
+            LoanState.LoanError.NoQRCode -> stringResource(R.string.loans_error_no_qr)
+            LoanState.LoanError.Network -> stringResource(R.string.loans_error_network)
+            LoanState.LoanError.Unknown -> stringResource(R.string.loans_error_unknown)
+        }
+
+        AlertDialog(
+            onDismissRequest = {         onLoanMsgShown() },
+            title = { Text(stringResource(R.string.popup_error_title)) },
+            text = { Text(errMsg) },
+            confirmButton = { TextButton(onClick = onLoanMsgShown) { Text(stringResource(R.string.popup_accept)) } },
+        )
+
+
+    }
 }
 
 @Composable
@@ -184,35 +214,6 @@ private fun LoanContent(state: LoanState, padding: PaddingValues, onLogout: () -
 
     LoadingDialog(state.loanLoading)
 
-    // show loanSuccess
-    if (state.loanSuccess){
-        AlertDialog(
-            onDismissRequest = {         onLoanMsgShown() },
-            title = { Text(stringResource(R.string.popup_success)) },
-            text = { Text(stringResource(R.string.loans_success)) },
-            confirmButton = { TextButton(onClick = onLoanMsgShown) { Text(stringResource(R.string.popup_accept)) } },
-        )
-    }
-
-    // show loanError
-    if (state.loanError != null){
-        val errMsg = when(state.loanError){
-            LoanState.LoanError.Unauthenticated -> stringResource(R.string.loans_error_unauthenticated)
-            LoanState.LoanError.NoBicycle -> stringResource(R.string.loans_error_no_bicycle)
-            LoanState.LoanError.NoQRCode -> stringResource(R.string.loans_error_no_qr)
-            LoanState.LoanError.Network -> stringResource(R.string.loans_error_network)
-            LoanState.LoanError.Unknown -> stringResource(R.string.loans_error_unknown)
-        }
-
-        AlertDialog(
-            onDismissRequest = {         onLoanMsgShown() },
-            title = { Text(stringResource(R.string.popup_error_title)) },
-            text = { Text(errMsg) },
-            confirmButton = { TextButton(onClick = onLoanMsgShown) { Text(stringResource(R.string.popup_accept)) } },
-        )
-
-
-    }
 
     if (displayLogoutDialog) {
         AlertDialog(
