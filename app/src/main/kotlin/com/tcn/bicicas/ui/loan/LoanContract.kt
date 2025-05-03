@@ -10,4 +10,12 @@ data class LoanState(
     val loading: Boolean = false,
     val loggedIn: Boolean = false,
     val loginError: LoginError? = null,
-)
+
+    val loanSuccess: Boolean = false,
+    val loanLoading: Boolean = false,
+    val loanError: LoanError? = null,
+
+) {enum class LoanError {
+    Unauthenticated, NoBicycle, NoQRCode, Network, Unknown
+}
+}

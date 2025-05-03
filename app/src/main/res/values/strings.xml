@@ -64,4 +64,8 @@
     <string name="stations_list_status_updated_days_ago">Hace %1$d d</string>
     <string name="desbloqueo_mediante_codigo_qr">Desbloqueo mediante código QR</string>
 
+    <!-- Loans -->
+    <string name="qr_scan_string">Escanea el código QR</string>
+    <string name="escanear_c_digo_qr">Escanear código QR</string>
+
 </resources>

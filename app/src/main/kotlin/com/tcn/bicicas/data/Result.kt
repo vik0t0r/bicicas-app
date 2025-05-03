@@ -1,5 +1,6 @@
 package com.tcn.bicicas.data
 
+import android.util.Log
 import com.tcn.bicicas.data.model.HttpError
 import com.tcn.bicicas.data.model.NetworkError
 import com.tcn.bicicas.data.model.Token
@@ -21,8 +22,9 @@ suspend fun <T : Any> resultOf(call: suspend () -> Response<T>): Result<Pair<Res
     return try {
         val response = call()
         when {
-            !response.isSuccessful ->
-                Result.failure(HttpError(response.code(), response.raw().body?.toString()))
+            !response.isSuccessful -> {
+                Result.failure(HttpError(response.code(), response.errorBody()?.string()))
+            }
 
             response.body() != null -> Result.success(response to response.body()!!)
             else -> Result.failure(UnknownError())

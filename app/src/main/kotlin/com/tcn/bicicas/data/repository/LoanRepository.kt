@@ -2,6 +2,7 @@ package com.tcn.bicicas.data.repository
 
 import com.tcn.bicicas.data.datasource.local.LocalStore
 import com.tcn.bicicas.data.datasource.remote.SecretApi
+import com.tcn.bicicas.data.model.Loan
 import com.tcn.bicicas.data.model.Token
 import com.tcn.bicicas.data.model.TwoFactorAuth
 import com.tcn.bicicas.data.resultOf
@@ -65,4 +66,11 @@ class LoanRepository(
             .map { (_, twoFactorAuth) -> twoFactorAuth }
     }
 
+    suspend fun loanBike(  qrcode: String): Result <Loan>{
+        val token = tokenAuthStore.get()?.value
+        return token?.let {
+            resultOf { secretApi.remoteLoan("Bearer $it", qrcode, false) }
+                .map { (_, twoFactorAuth) -> twoFactorAuth }
+        } ?: Result.failure(IllegalStateException("Token is null"))
+    }
 }

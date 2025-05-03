@@ -5,12 +5,14 @@ import com.tcn.bicicas.ui.components.login.LoginDialog
 import com.tcn.bicicas.ui.pin.PinState
 
 import android.content.res.Configuration
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,15 +24,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Undo
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -46,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -53,6 +60,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.tcn.bicicas.R
 import com.tcn.bicicas.ui.components.ScrollableAlertDialog
 import io.github.g00fy2.quickie.QRResult
@@ -66,7 +75,7 @@ import org.koin.androidx.compose.getViewModel
 fun LoanScreen(padding: PaddingValues) {
     val viewModel: LoanViewModel = getViewModel()
     val state by viewModel.loanState.collectAsState()
-    LoanScreen(state, padding, viewModel::logout, viewModel::login)
+    LoanScreen(state, padding, viewModel::logout, viewModel::login, viewModel::loanBike, viewModel::onLoanMsgShown)
 }
 
 @Composable
@@ -74,10 +83,12 @@ fun LoanScreen(
     state: LoanState,
     padding: PaddingValues,
     onLogout: () -> Unit,
-    onLogin: (String, String) -> Unit
+    onLogin: (String, String) -> Unit,
+    loanBike: (String) -> Unit,
+    onLoanMsgShown: () -> Unit
 ) {
     if (state.loggedIn) {
-        LoanContent(state, padding, onLogout)
+        LoanContent(state, padding, onLogout, loanBike, onLoanMsgShown)
     } else {
         LoanWelcomeContent(state, padding, onLogin)
     }
@@ -168,7 +179,7 @@ private fun LoanWelcomeContent(
 
 
 @Composable
-private fun LoanContent(state: LoanState, padding: PaddingValues, onLogout: () -> Unit) {
+private fun LoanContent(state: LoanState, padding: PaddingValues, onLogout: () -> Unit, loanBike: (String) -> Unit,  onLoanMsgShown: () -> Unit) {
     var displayLogoutDialog by rememberSaveable { mutableStateOf(false) }
     val onLogoutClicked = { displayLogoutDialog = true }
     Surface(
@@ -178,10 +189,43 @@ private fun LoanContent(state: LoanState, padding: PaddingValues, onLogout: () -
     ) {
 
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            PortraitLoanContent(state, onLogoutClicked)
+            PortraitLoanContent(state, onLogoutClicked, loanBike)
         } else {
             LandscapeLoanContent(state, onLogoutClicked)
         }
+    }
+
+
+    LoadingDialog(state.loanLoading)
+
+    // show loanSuccess
+    if (state.loanSuccess){
+        AlertDialog(
+            onDismissRequest = {         onLoanMsgShown() },
+            title = { Text("Éxito") },
+            text = { Text("Prestamo realizado correctamente") },
+            confirmButton = { TextButton(onClick = onLoanMsgShown) { Text(stringResource(R.string.popup_accept)) } },
+        )
+    }
+
+    // show loanError
+    if (state.loanError != null){
+        val errMsg = when(state.loanError){
+            LoanState.LoanError.Unauthenticated -> "Se ha cerrado la sesión"
+            LoanState.LoanError.NoBicycle -> "No hay bicicleta en este anclaje"
+            LoanState.LoanError.NoQRCode -> "El código QR no existe"
+            LoanState.LoanError.Network -> "Problema de red"
+            LoanState.LoanError.Unknown -> "Error desconocido"
+        }
+
+        AlertDialog(
+            onDismissRequest = {         onLoanMsgShown() },
+            title = { Text("Error en el prestamo") },
+            text = { Text(errMsg) },
+            confirmButton = { TextButton(onClick = onLoanMsgShown) { Text(stringResource(R.string.popup_accept)) } },
+        )
+
+
     }
 
     if (displayLogoutDialog) {
@@ -200,15 +244,22 @@ private fun LoanContent(state: LoanState, padding: PaddingValues, onLogout: () -
         )
     }
 
+
+
 }
 
 @Composable
-private fun PortraitLoanContent(state: LoanState, onLogoutButtonClicked: () -> Unit) {
+private fun PortraitLoanContent(
+    state: LoanState,
+    onLogoutButtonClicked: () -> Unit,
+    loanBike:(String) -> Unit
+) {
+    val inputText = remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         // Logout
         TextButton(
             onClick = onLogoutButtonClicked,
@@ -218,45 +269,79 @@ private fun PortraitLoanContent(state: LoanState, onLogoutButtonClicked: () -> U
         ) {
             Text(stringResource(R.string.pin_logout))
         }
-        val ctx = LocalContext.current
-        val scanQrCodeLauncher = rememberLauncherForActivityResult(ScanCustomCode()) { result ->
-            val text = when (result) {
-                is QRResult.QRSuccess -> {
-                    result.content.rawValue
-                    // decoding with default UTF-8 charset when rawValue is null will not result in meaningful output, demo purpose
-                        ?: result.content.rawBytes?.let { String(it) }.orEmpty()
-                }
-                QRResult.QRUserCanceled -> "User canceled"
-                QRResult.QRMissingPermission -> "Missing permission"
-                is QRResult.QRError -> "${result.exception.javaClass.simpleName}: ${result.exception.localizedMessage}"
-            }
-            // handle QRResult
-            Toast.makeText(ctx, text, Toast.LENGTH_LONG).show()
-        }
+
+        Spacer(Modifier.weight(0.1f))
+
+
+        // Manual number entering
+        OutlinedTextField(
+            value = inputText.value,
+            onValueChange = { newText ->
+                val filteredText = newText.uppercase().filter { it.isLetterOrDigit() }.take(3)
+                inputText.value = filteredText },
+            label = { Text("Código QR") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        )
 
         Button(
             onClick = {
-                scanQrCodeLauncher.launch( ScannerConfig.build {
-                    setBarcodeFormats(listOf(BarcodeFormat.FORMAT_QR_CODE)) // set interested barcode formats
-                    setOverlayStringRes(R.string.app_name) // string resource used for the scanner overlay
-                    //setOverlayDrawableRes(R.drawable.ic_scan_barcode) // drawable resource used for the scanner overlay
-                    setHapticSuccessFeedback(false) // enable (default) or disable haptic feedback when a barcode was detected
-                    setShowTorchToggle(true) // show or hide (default) torch/flashlight toggle button
-                    setShowCloseButton(true) // show or hide (default) close button
-                    setHorizontalFrameRatio(1f) // set the horizontal overlay ratio (default is 1 / square frame)
-                    setUseFrontCamera(false) // use the front camera
-                    setKeepScreenOn(true) // keep the device's screen turned on
+                loanBike(inputText.value)
+            },
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.CenterHorizontally)
+        ) {
+            Text("Desbloquear ")
+        }
+
+        // QR code scan
+        val scanQrCodeLauncher = rememberLauncherForActivityResult(ScanCustomCode()) { result ->
+            when (result) {
+                is QRResult.QRSuccess -> {
+                    result.content.rawValue?.let{loanBike(it)}
+
+                }
+                QRResult.QRUserCanceled -> {
+                    Log.e("QR", "UserCanceled")
+                }
+                QRResult.QRMissingPermission -> {
+                    Log.e("QR", "MissingPermission")
+                }
+                is QRResult.QRError -> {
+                    Log.e("QR","${result.exception.javaClass.simpleName}: ${result.exception.localizedMessage}")
+                }
+            }
+        }
+
+        Spacer(Modifier.weight(0.8f))
+
+        Button(
+            onClick = {
+                scanQrCodeLauncher.launch(ScannerConfig.build {
+                    setBarcodeFormats(listOf(BarcodeFormat.FORMAT_QR_CODE))
+                    setOverlayStringRes(R.string.qr_scan_string)
+                    setHapticSuccessFeedback(false)
+                    setShowTorchToggle(true)
+                    setShowCloseButton(true)
+                    setHorizontalFrameRatio(1f)
+                    setUseFrontCamera(false)
+                    setKeepScreenOn(true)
                 })
             },
             modifier = Modifier.padding(16.dp)
+                .height(120.dp)  // Make the button taller
+                .fillMaxWidth()
         ) {
-            Text(text = "Escanear código QR")
+            Text(text = stringResource(R.string.escanear_c_digo_qr),
+                fontSize = 24.sp)
         }
+        Spacer(Modifier.weight(0.2f))
 
-        Spacer(Modifier.weight(1f))
-        Spacer(Modifier.height(24.dp))
     }
 }
+
 
 @Composable
 private fun LandscapeLoanContent(state: LoanState, onLogoutButtonClicked: () -> Unit) {
@@ -271,21 +356,37 @@ private fun LandscapeLoanContent(state: LoanState, onLogoutButtonClicked: () -> 
         ) {
             Text(stringResource(R.string.pin_logout))
         }
-
-
     }
 }
 
+
 @Composable
-private fun UserText(userNumber: String?, modifier: Modifier = Modifier) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
-        Text(
-            text = stringResource(R.string.pin_label_user),
-            style = MaterialTheme.typography.titleMedium
-        )
-        Text(
-            text = userNumber ?: "",
-            style = MaterialTheme.typography.displayLarge.copy(fontSize = 48.sp)
-        )
+fun LoadingDialog(isShowingDialog: Boolean) {
+    if (isShowingDialog) {
+        Dialog(
+            onDismissRequest = { },
+            DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(160.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.background,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .align(Alignment.Center)
+                        ,
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 10.dp
+                )
+            }
+        }
     }
 }

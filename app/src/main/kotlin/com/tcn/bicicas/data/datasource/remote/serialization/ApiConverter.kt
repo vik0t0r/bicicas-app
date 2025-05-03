@@ -1,5 +1,6 @@
 package com.tcn.bicicas.data.datasource.remote.serialization
 
+import com.tcn.bicicas.data.model.Loan
 import com.tcn.bicicas.data.model.Station
 import com.tcn.bicicas.data.model.Token
 import com.tcn.bicicas.data.model.TwoFactorAuth
@@ -19,6 +20,7 @@ class ApiConverter : Converter.Factory() {
             Token::class.java -> TokenConverter()
             TwoFactorAuth::class.java -> TwoFactorAuthConverter()
             Array<Station>::class.java -> StationConverter()
+            Loan::class.java -> LoanConverter()
             else -> null
         }
     }
