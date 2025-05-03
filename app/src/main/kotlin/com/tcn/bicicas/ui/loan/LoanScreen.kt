@@ -261,7 +261,7 @@ private fun PortraitLoanContent(
         OutlinedTextField(
             value = inputText.value,
             onValueChange = { newText ->
-                val filteredText = newText.uppercase().filter { it.isLetterOrDigit() }.take(3)
+                val filteredText = newText.uppercase().filter { it in '0'..'9' || it in 'A'..'F' }.take(3)
                 inputText.value = filteredText },
             label = { Text(stringResource(R.string.loans_qr_code_text_input)) },
             modifier = Modifier
@@ -273,6 +273,7 @@ private fun PortraitLoanContent(
             onClick = {
                 loanBike(inputText.value)
             },
+            enabled = inputText.value.length == 3,
             modifier = Modifier
                 .padding(16.dp)
                 .align(Alignment.CenterHorizontally)
@@ -364,7 +365,7 @@ private fun LandscapeLoanContent(
             OutlinedTextField(
                 value = inputText.value,
                 onValueChange = { newText ->
-                    val filteredText = newText.uppercase().filter { it.isLetterOrDigit() }.take(3)
+                    val filteredText = newText.uppercase().filter { it in '0'..'9' || it in 'A'..'F' }.take(3)
                     inputText.value = filteredText
                 },
                 label = { Text(stringResource(R.string.loans_qr_code_text_input)) },
@@ -376,6 +377,7 @@ private fun LandscapeLoanContent(
                 onClick = {
                     loanBike(inputText.value)
                 },
+                enabled = inputText.value.length == 3,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 8.dp)
