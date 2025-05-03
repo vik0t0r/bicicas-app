@@ -182,7 +182,7 @@ private fun PinContent(state: PinState, padding: PaddingValues, onLogout: () -> 
     if (displayLogoutDialog) {
         AlertDialog(
             onDismissRequest = { displayLogoutDialog = false },
-            title = { Text(stringResource(R.string.pin_logout)) },
+            title = { Text(stringResource(R.string.logout)) },
             text = { Text(stringResource(R.string.pin_logout_popup_text)) },
             confirmButton = { TextButton(onClick = onLogout) { Text(stringResource(R.string.popup_accept)) } },
             dismissButton = {
@@ -209,7 +209,7 @@ private fun PortraitPinContent(state: PinState, onLogoutButtonClicked: () -> Uni
                 .align(Alignment.End)
                 .padding(vertical = 12.dp, horizontal = 4.dp)
         ) {
-            Text(stringResource(R.string.pin_logout))
+            Text(stringResource(R.string.logout))
         }
         Spacer(Modifier.height(12.dp))
         UserText(state.userNumber)
@@ -251,7 +251,7 @@ private fun LandscapePinContent(state: PinState, onLogoutButtonClicked: () -> Un
                 .align(Alignment.TopEnd)
                 .padding(vertical = 4.dp, horizontal = 12.dp)
         ) {
-            Text(stringResource(R.string.pin_logout))
+            Text(stringResource(R.string.logout))
         }
 
         Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center) {
