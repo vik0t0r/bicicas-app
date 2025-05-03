@@ -13,6 +13,8 @@ import com.tcn.bicicas.data.repository.LoanRepository
 import com.tcn.bicicas.ui.components.login.LoginError
 import com.tcn.bicicas.ui.tickerFlow
 import io.github.g00fy2.quickie.QRResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

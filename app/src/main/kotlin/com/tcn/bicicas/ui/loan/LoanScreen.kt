@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -266,7 +268,10 @@ private fun PortraitLoanContent(
             label = { Text(stringResource(R.string.loans_qr_code_text_input)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text
+            )
         )
 
         Button(
@@ -369,7 +374,10 @@ private fun LandscapeLoanContent(
                     inputText.value = filteredText
                 },
                 label = { Text(stringResource(R.string.loans_qr_code_text_input)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text
+                )
             )
 
             // Unlock Button
