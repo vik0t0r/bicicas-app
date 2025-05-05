@@ -23,12 +23,10 @@ risk, please, contact via email).
 * A local.properties file in the root of the project including these properties:
 
 ``` properties
-MAPS_API_KEY=my_maps_api_key
-OAUTH_CLIENT_ID=my_auth_endpoint_client_id
-OAUTH_CLIENT_SECRET=my_auth_client_secret
 OAUTH_ENDPOINT=https://auth.endpoint.me
 STATUS_ENDPOINT=https://status.endpoint.me
 ENCRYPT_PASSWORD=my_encryption_pass
+MAPS_API_KEY=my_maps_api_key
 ```
 
 ## Whats next
